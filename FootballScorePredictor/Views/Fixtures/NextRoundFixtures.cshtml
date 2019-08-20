@@ -1,0 +1,347 @@
+﻿@{
+    ViewBag.Title = "Next Round Fixtures";
+}
+
+<style>
+    #prevRnd, #ntxRnd {
+        font-size: 18px;
+    }
+
+        #prevRnd, #ntxRnd:hover {
+            cursor: pointer;
+        }
+
+    .pImage {
+        height: 60px;
+        margin-top: -10px;
+        margin-left: 120px;
+        display: none;
+    }
+
+    .homeForecastScore, .awayForecastScore {
+        width: 1.5rem;
+        height: 2rem;
+        text-align: center;
+        border: 1px solid silver;
+        color: navy;
+    }
+
+    .correctScore {
+        border: 2px solid #0b7d19;
+        background-color: green;
+        color: white;
+    }
+
+    .correctResult {
+        border: 3px solid #0b7d19;
+        background-color: green;
+        color: white;
+    }
+</style>
+
+<div>
+    <span id="currentRnd" style="display: none">@ViewBag.Round</span>
+    @if (@ViewBag.LeagueID == 2021)
+    {
+        <span class="mt-5 mb-3 pt-2 pb-2 badge badge-success" style="font-size: 16px; font-weight: normal">Premier League Fixtures and Predictions</span><br />
+    }
+    else
+    {
+        <span class="mt-5 mb-3 pt-2 pb-2 badge badge-warning" style="font-size: 16px; font-weight: normal">Championship Fixtures and Predictions</span><br />
+    }
+
+    <div class="col-md-12">
+        <label>
+            <i id="prevRnd" style="font-size: 20px" class="fa fa-caret-left text-secondary" onclick="PreviousRnd($('#currentRnd').text());" title="Previous Round"></i>
+            <span id="rndHeader" style="font-size: 18px" class="ml-1 mr-1 font-weight-bolder text-secondary"></span>
+            <i id="ntxRnd" style="font-size: 20px" class="fa fa-caret-right text-secondary" onclick="NextRnd($('#currentRnd').text());" title="Next Round"></i>
+        </label>
+    </div>
+    <div class="col-md-12">
+        <button id="btnMakePredictions" class="btn btn-outline-danger btn-sm" style="display: none" onclick="MakePredictions('@ViewBag.LeagueID', $('#currentRnd').text());"><i class="fa fa-edit"></i> Make Predictions</button>
+    </div>
+
+    <div class="row" id="divMatches">
+
+    </div>
+
+</div>
+
+<script src="~/Scripts/jquery-3.3.1.min.js"></script>
+<link href="~/Content/font-awesome.min.css" rel="stylesheet" />
+<script src="~/Scripts/FootballForecast.js"></script>
+
+<script>
+
+    // Document Ready
+    $(document).ready(function () {
+        GetMatches(@ViewBag.LeagueID, @ViewBag.Round);
+    });
+
+    function PreviousRnd(currentRnd) {
+
+        let thisRnd = parseInt(currentRnd) -1;
+        $('#nextRnd').show();
+
+        if (thisRnd  == 1) {
+            $('#prevRnd').hide();
+        }
+         GetMatches(@ViewBag.LeagueID, thisRnd);
+    };
+
+    function NextRnd(currentRnd) {
+
+        let thisRnd = parseInt(currentRnd) + 1;
+        $('#prevRnd').show();
+
+        var maxRnd = 46;
+        if (@ViewBag.LeagueID == 2021) {
+            maxRnd = 38;
+        }
+        if (thisRnd == maxRnd) {
+             $('#nextRnd').hide();
+        }
+        GetMatches(@ViewBag.LeagueID, thisRnd);
+    };
+
+    // Send Match details to the controller to make and save the predictions
+    function MakePredictions(leagueID, currentRnd) {
+
+        $('#btnMakePredictions').hide();
+
+         // List of object to hold ALL match Details
+        var matchDetailsList = new Array();
+
+        var url = "https://api.football-data.org/v2/competitions/" + leagueID + "/matches?matchday=" + currentRnd;
+        $.ajax({
+            headers: {
+                'X-Auth-Token': 'caf25c72c418408da3c9a36e728c5d95'
+            },
+            url: url,
+            dataType: 'json',
+            type: 'GET',
+        }).done(function (response) {
+
+            $.each(response.matches, function (mIndex, match) {
+
+                var matchDetails = {
+                    'LeagueID': leagueID,
+                    'Round': currentRnd,
+                    'MatchID': match.id,
+                    'HomeTeamID': match.homeTeam.id,
+                    'AwayTeamID': match.awayTeam.id
+                 };
+
+                 matchDetailsList.push(matchDetails);
+            });
+
+             var data = JSON.stringify(matchDetailsList);
+             $.ajax({
+                 type: "POST",
+                    url: "/Fixtures/MakePredictions?leagueID=" + leagueID,
+                    contentType: 'application/json; charset=utf-8',
+                    data: data,
+                    success: function (matchPredictions) {
+                        $.each(matchPredictions, function (mIndex, match) {
+                             // Show processing Image
+                            var img = $('#' + match.MatchID.toString() + 'image')
+                            $(img).show();
+
+                            setTimeout(function () {
+                                 $(img).hide();
+                                 var mSpan = $('#' + match.MatchID.toString())
+
+                                // Home Forecast Score
+                                var hFScore = $(mSpan).closest('div').find('.homeForecastScore');
+                                $(hFScore).text(match.HomeTeamPredictScore.toString());
+
+                                // Away Forecast Score
+                                var aFScore = $(mSpan).closest('div').find('.awayForecastScore');
+                                $(aFScore).text(match.AwayTeamPredictScore.toString());
+                            }, 3000);
+                         });
+                    },
+
+                    error: function  (xhr,  textStatus,  error)  {
+                          alert(xhr.responseText);
+                    }
+             });
+        });
+    };
+
+
+    // GET MATCHES ********************************************************************************************************************************
+    function GetMatches(league, matchDay) {
+
+        $('#btnMakePredictions').hide();
+        $('#divMatches').empty();
+
+        var fixColor = "bg-light";
+        @*if (@ViewBag.LeagueID == 2021) {
+            fixColor = "bg-success text-white";
+        }*@
+
+        var url = "https://api.football-data.org/v2/competitions/" + league + "/matches?matchday=" + matchDay;
+        $.ajax({
+            headers: {
+                'X-Auth-Token': 'caf25c72c418408da3c9a36e728c5d95'
+            },
+            url: url,
+            dataType: 'json',
+            type: 'GET',
+        }).done(function (response) {
+            console.log(response);
+
+            // List of object to hold any Match Results
+            var resultsList = new Array();
+
+            $.each(response.matches, function (mIndex, match) {
+
+                //Format Match Info
+                var d = new Date(match.utcDate);
+                var dateStr = day[d.getDay()] + ' ' + d.getDate() + ' ' + month[d.getMonth()] + ' ' + d.getFullYear()
+                var timeStr = d.getHours() + ':' + (d.getMinutes() < 10 ? '0' : '') + d.getMinutes();
+
+                var homeTeam = Abbreviate(match.homeTeam.name);
+                var awayTeam = Abbreviate(match.awayTeam.name);
+                var matchID = match.id;
+                var homeTeamID = match.homeTeam.id;
+                var awayTeamID = match.awayTeam.id;
+                var matchStatus = match.status;
+
+                var homeTeamScore = checkNull(match.score.fullTime.homeTeam);
+                var homeTeamImage = tImage[match.homeTeam.id];
+                var awayTeamScore = checkNull(match.score.fullTime.awayTeam);
+                var awayTeamImage = tImage[match.awayTeam.id];
+                var classScore = "bg-secondary";
+                var fScore = "";
+                var fScoreClass = "col-md-12";
+                if (matchStatus === "FINISHED") {
+                    classScore = "bg-warning text-black";
+                    fScoreClass += " text-secondary";
+                    fScore = "Final Score";
+
+                    // Collect Match Result ********
+                    var result = {
+                            'MatchID': match.id,
+                            'HomeTeamID': match.homeTeam.id,
+                            'AwayTeamID': match.awayTeam.id,
+                            'HomeScore': homeTeamScore,
+                            'AwayScore': awayTeamScore
+                    };
+                    resultsList.push(result);
+
+                    console.log(result);
+                    // ******************************
+                }
+                else if (matchStatus === "PAUSED" || matchStatus === "IN_PLAY") {
+                    classScore = "bg-success text-white";
+                    fScoreClass += " text-success";
+                    fScore = "'Live'";
+                };
+
+                var matchDetails = tools.getStringBuilder()
+                    .append('<div class="card ' + fixColor + ' mb-3 mt-3 ml-3 border-dark" style="width: 22rem;">')
+                    .append('<span id=' + matchID + ' style="display: none">' + matchID + '</span>')
+                    .append('<div class="card-header">' + dateStr + '<span class="pull-right" style="color: navy; font-size: 14px">' + timeStr + '</span></div>')
+                    .append('<div class="card-body bg-white">')
+                    .append('<div class="col-lg-12 text-secondary" style="text-align: center; font-size: 14px; font-weight: bold; margin-left: -7px">Forecast</div>') // Text Forecast
+                    .append('<div class="row d-flex align-items-center">')
+                    .append('<div class="d-flex align-items-center ml-3" style="width: 6rem; height: 4rem; color: navy; text-align: center"><img src="' + homeTeamImage + '" height="45px" style="margin-top: -100px; margin-right: -40px"></img>' + homeTeam + '</div>') // Home Team)
+                    .append('<div class="ml-1 mr-1" style="width: 1.5rem; height: 5rem; text-align: center">') // Home Scores
+                    .append('<div id="homeForecast' + matchID + '" class="mb-1 homeForecastScore"></div>') // Home Forecast Score
+                    .append('<div class="' + classScore + '" style="width: 1.5rem; height: 2rem; text - align: center; border: 1px solid silver; font-weight: bold">' + homeTeamScore + '</div>') // Home Final Score
+                    .append('</div>') // /Home Scores
+                    .append('<div style="width: 2rem; height: 2rem; text-align: center">v</div>')
+                    .append('<div class="ml-1 mr-1" style="width: 1.5rem; height: 5rem; text-align: center">') // Away Scores
+                    .append('<div id="awayForecast' + matchID + '" class="mb-1 awayForecastScore"></div>') // Away Forecast Score
+                    .append('<div class="' + classScore + '" style="width: 1.5rem; height: 2rem; text-align: center; border: 1px solid silver; font-weight: bold">' + awayTeamScore + '</div>') // Away Final Score
+                    .append('</div>') // /Away scores
+                    .append('<div class="d-flex align-items-center ml-3" style="width: 6rem; height: 4rem; color: navy; text-align: center">' + awayTeam + '<img src="' + awayTeamImage + '" height="45px" style="margin-top: -100px; margin-left: -40px"></img></div>') // Away Team)
+                    .append('<div id="matchStatus" class="' + fScoreClass + '" style="text-align: center; font-size: 14px; font-weight: bold; margin-left: -7px; margin-top: -12px">' + fScore + '</div>') // Text Final Score
+                    .append('<img src="/Images/giphyWait.gif" id=' + matchID + 'image class="pImage" />')
+                    .append('</div>') // /card-body
+                    .append('<div class="card-footer bg-white clearfix">')
+                    .append('<div id="' + matchID + 'tick" class="row pull-right" style="min-height: 45px"><img src="/Images/tick.png" width="40px" class="pr-1 mx-4 my-1" style="display: none" /></div>')
+                     .append('</div>') // card footer
+                    .append('</div>') // /card
+                    .toString();
+                $('#divMatches').append(matchDetails);
+            })
+
+            // Send any match results to the database
+            let url = "/Fixtures/SaveResults";
+           $.post(url, { 'resultsList': resultsList });
+        });
+        $('#currentRnd').text(matchDay);
+        $('#rndHeader').text(' Round ' + matchDay);
+
+
+        // Check and display previous predictions and results for these matches
+        GetPredictions(league, matchDay);
+    };
+
+
+    // Get and display any previous predictions with forecast outcome
+    function GetPredictions(league, matchDay) {
+
+        let url = "/Fixtures/GetPredictions";
+        $.post(url, { 'leagueID': league, 'round': matchDay }).done(function (predictions) {
+
+
+            if (predictions.length == 0 && matchDay == '@ViewBag.Round')
+            {
+               $('#btnMakePredictions').show();
+            }
+
+            $.each(predictions, function (mIndex, pred) {
+                // Home Score Forecast
+                let mHomeForecast = $('div').find('div#homeForecast' + pred.MatchID.toString());
+                $(mHomeForecast).text(pred.HomeScore);
+
+                 // Away Score Forecast
+                let mAwayForecast = $('div').find('div#awayForecast' + pred.MatchID.toString());
+                $(mAwayForecast).text(pred.AwayScore);
+
+                // Display the outcome
+                 let tickDiv = $('div').find('div#' + pred.MatchID.toString() + 'tick');
+                if (pred.Outcome === "CorrectScore") {
+                    $(mHomeForecast).addClass('correctScore');
+                    $(mAwayForecast).addClass('correctScore');
+                    $(tickDiv).addClass('bg-success');
+                    $(tickDiv).children('img').first().show();
+
+                } else if (pred.Outcome === "CorrectResult") {
+                    $(mHomeForecast).addClass('correctResult');
+                    $(mAwayForecast).addClass('correctResult');
+                    $(tickDiv).children('img').first().show();
+                }
+            });
+
+        });
+
+    };
+
+
+    // *******************************************************************************************************************************************
+
+    // String Builder
+    var tools = {
+        getStringBuilder: function () {
+            var data = [];
+            var counter = 0;
+            return {
+                // adds string s to the stringbuilder
+                append: function (s) { data[counter++] = s; return this; },
+                // removes j elements starting at i, or 1 if j is omitted
+                remove: function (i, j) { data.splice(i, j || 1); return this; },
+                // inserts string s at i
+                insert: function (i, s) { data.splice(i, 0, s); return this; },
+                // builds the string
+                toString: function (s) { return data.join(s || ""); return this; },
+            };
+        }
+    };
+    // *************************************************************************************************************************************************
+
+</script>

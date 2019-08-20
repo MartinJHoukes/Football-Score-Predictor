@@ -1,0 +1,30 @@
+﻿<?xml version="1.0" encoding="utf-8"?><Database Name="FootballForecast" Class="FootballForcastDataContext" xmlns="http://schemas.microsoft.com/linqtosql/dbml/2007">
+  <Connection Mode="WebSettings" ConnectionString="Data Source=DESKTOP-291IIHT\SQLEXPRESS;Initial Catalog=FootballForecast;Integrated Security=True" SettingsObjectName="System.Configuration.ConfigurationManager.ConnectionStrings" SettingsPropertyName="FootballForecastConnectionString" Provider="System.Data.SqlClient" />
+  <Table Name="dbo.Forecast" Member="Forecasts">
+    <Type Name="Forecast">
+      <Column Name="ID" Type="System.Int32" DbType="Int NOT NULL IDENTITY" IsPrimaryKey="true" IsDbGenerated="true" CanBeNull="false" />
+      <Column Name="MatchID" Type="System.Int32" DbType="Int NOT NULL" CanBeNull="false" />
+      <Column Name="HomeTeamID" Type="System.Int32" DbType="Int NOT NULL" CanBeNull="false" />
+      <Column Name="AwayTeamID" Type="System.Int32" DbType="Int NOT NULL" CanBeNull="false" />
+      <Column Name="HomeScoreForecast" Type="System.Int32" DbType="Int" CanBeNull="true" />
+      <Column Name="AwayScoreForecast" Type="System.Int32" DbType="Int" CanBeNull="true" />
+      <Column Name="ResultConfidence" Type="System.Decimal" DbType="Decimal(8,2)" CanBeNull="true" />
+      <Column Name="ScoreConfidence" Type="System.Decimal" DbType="Decimal(8,2)" CanBeNull="true" />
+      <Column Name="CorrectResult" Type="System.Boolean" DbType="Bit" CanBeNull="true" />
+      <Column Name="CorrectScore" Type="System.Boolean" DbType="Bit" CanBeNull="true" />
+      <Column Name="ForecastDate" Type="System.DateTimeOffset" DbType="datetime" CanBeNull="true" />
+      <Column Name="Round" Type="System.Int32" DbType="int" CanBeNull="true" />
+      <Column Name="LeagueID" Type="System.Int32" DbType="int" CanBeNull="true" />
+    </Type>
+  </Table>
+  <Table Name="dbo.Result" Member="Results">
+    <Type Name="Result">
+      <Column Name="ID" Type="System.Int32" DbType="Int NOT NULL IDENTITY" IsPrimaryKey="true" IsDbGenerated="true" CanBeNull="false" />
+      <Column Name="MatchID" Type="System.Int32" DbType="Int NOT NULL" CanBeNull="false" />
+      <Column Name="HomeTeamID" Type="System.Int32" DbType="Int NOT NULL" CanBeNull="false" />
+      <Column Name="AwayTeamID" Type="System.Int32" DbType="Int NOT NULL" CanBeNull="false" />
+      <Column Name="HomeScore" Type="System.Int32" DbType="Int NOT NULL" CanBeNull="false" />
+      <Column Name="AwayScore" Type="System.Int32" DbType="Int NOT NULL" CanBeNull="false" />
+    </Type>
+  </Table>
+</Database>

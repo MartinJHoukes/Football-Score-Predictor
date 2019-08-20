@@ -1,0 +1,95 @@
+﻿
+@{
+    ViewBag.Title = "Championship";
+}
+
+<style>
+    .teamImage {
+        Width: 20px;
+        Height: 20px;
+        margin-right: 5px;
+        margin-left: 5px;
+    }
+    .figCol {
+        width: 60px;
+    }
+</style>
+
+<div style="min-height: 600px">
+
+    <div class="row">
+        <div class="col-md-9">
+            <span style="display: none" id="nextRound">100</span>
+            <button  id="roundHeader" class="btn btn-sm btn-outline-warning mt-5" onclick="GetNextFixtures($('#nextRound').text());"></button>
+            <table id="tblLeague" class="table-bordered table-responsive-sm mt-3 mb-2" style="min-width: 900px">
+                <thead>
+                    <tr class="bg-white" id="tblHeading" style="height: 40px; font-style: italic">
+                        <th></th>
+                        <th id="tblLeagueTitle" class="pl-3 font-weight-bold">
+                            Championship
+                        </th>
+                        <th class="font-weight-normal text-center">
+                            Played
+                        </th>
+                        <th class="font-weight-normal text-center">
+                            Won
+                        </th>
+                        <th class="font-weight-normal text-center">
+                            Drawn
+                        </th>
+                        <th class="font-weight-normal text-center">
+                            Lost
+                        </th>
+                        <th class="font-weight-normal text-center">
+                            For
+                        </th>
+                        <th class="font-weight-normal text-center">
+                            Against
+                        </th>
+                        <th class="font-weight-normal text-center">
+                            GD
+                        </th>
+                        <th class="font-weight-normal text-center">
+                            Points
+                        </th>
+                    </tr>
+                </thead>
+                <tbody id="tblBody"></tbody>
+                <tfoot>
+                    <tr>
+                        <td colspan="10" height="35px">
+                            <div style="font-size: 12px; text-align: right; color: grey; background-color: white; padding-right: 10px; font-style: italic">
+                                <span>Last Updated:  </span>
+                                <span id="lblLastUpdated" class="bg-light text-primary p-1"></span>
+                            </div>
+                        </td>
+                    </tr>
+                </tfoot>
+            </table>
+
+            
+        </div>
+    </div>
+
+</div>
+
+<script src="~/Scripts/jquery-3.3.1.min.js"></script>
+<script src="~/Scripts/FootballForecast.js"></script>
+<link href="~/Content/font-awesome.min.css" rel="stylesheet" />
+
+<script>
+
+    $(document).ready(function () {
+       GetTableAPI("CHAMP");
+    });
+
+
+    function GetNextFixtures(nextRound) {
+        var url = "/Fixtures/NextRoundFixtures?leagueID=2016&nextRound=" + nextRound;
+        window.location.href = url;
+
+    };
+ 
+</script>
+
+

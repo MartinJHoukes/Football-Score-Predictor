@@ -1,0 +1,18 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<ordesignerObjectsDiagram dslVersion="1.0.0.0" absoluteBounds="0, 0, 11, 8.5" name="FootballForcast">
+  <DataContextMoniker Name="/FootballForcastDataContext" />
+  <nestedChildShapes>
+    <classShape Id="19837690-2d83-4d55-bf5b-d8d9991036f6" absoluteBounds="1, 0.75, 2, 3.3093082682291666">
+      <DataClassMoniker Name="/FootballForcastDataContext/Forecast" />
+      <nestedChildShapes>
+        <elementListCompartment Id="7ac3189f-c438-45e0-9fb9-e4c631646384" absoluteBounds="1.0149999999999997, 1.21, 1.9700000000000002, 2.7493082682291665" name="DataPropertiesCompartment" titleTextColor="Black" itemTextColor="Black" />
+      </nestedChildShapes>
+    </classShape>
+    <classShape Id="e7c8d83b-a2a2-47e4-80d8-af54d70594e2" absoluteBounds="3.375, 0.875, 2, 1.9631982421875">
+      <DataClassMoniker Name="/FootballForcastDataContext/Result" />
+      <nestedChildShapes>
+        <elementListCompartment Id="a2b18356-5850-400a-810b-8eebdb98601a" absoluteBounds="3.3899999999999997, 1.335, 1.9700000000000002, 1.4031982421875" name="DataPropertiesCompartment" titleTextColor="Black" itemTextColor="Black" />
+      </nestedChildShapes>
+    </classShape>
+  </nestedChildShapes>
+</ordesignerObjectsDiagram>
