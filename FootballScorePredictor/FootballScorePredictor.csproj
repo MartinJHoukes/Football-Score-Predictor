@@ -341,7 +341,7 @@
     <Content Include="ApplicationInsights.config">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="Images\Championship.png" />
+    <Content Include="Images\ChampionshipLogo.png" />
     <Content Include="Images\Football.png" />
     <Content Include="Images\giphyWait.gif" />
     <Content Include="Images\PremierLeague.png" />
