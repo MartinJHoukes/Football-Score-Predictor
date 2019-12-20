@@ -16,6 +16,9 @@ namespace FootballScorePredictor.Models
         public int AwayTeamStanding { get; set; }
         public int HomeTeamPredictScore { get; set; }
         public int AwayTeamPredictScore { get; set; }
+        public int HomeWinForecast { get; set; }
+        public int AwayWinForecast { get; set; }
+        public int DrawForecast { get; set; }
         public DateTime ForecastDate { get; set; }
 
 
@@ -37,49 +40,49 @@ namespace FootballScorePredictor.Models
             else
                 teamStandings = (List<TeamStanding>)HttpContext.Current.Session["CHAMPTeamStandings"];
 
-            // Make the predictions
-            Random rnd = new Random(DateTime.Now.Millisecond);
-
             foreach (var match in matchDetails)
             {
                 var hTeamStanding = teamStandings.Where(x => x.ID == match.HomeTeamID).Select(x => x.Position).FirstOrDefault();
                 var aTeamStanding = teamStandings.Where(x => x.ID == match.AwayTeamID).Select(x => x.Position).FirstOrDefault();
                 var diff = hTeamStanding - aTeamStanding;
-                switch (diff)
+
+                // Run the forecast 100 times to find forecast precentages 
+                Random rnd = new Random(Guid.NewGuid().GetHashCode());
+
+                var listForecasts = new List<MatchForecast>();
+                for (int i = 0; i < 100; i++)
                 {
-                    case int n when (n <= -18):
-                        match.HomeTeamPredictScore = rnd.Next(2, 6);
-                        match.AwayTeamPredictScore = rnd.Next(2);
-                        break;
-                    case int n when (n <= -12 && n >= -17):
-                        match.HomeTeamPredictScore = rnd.Next(2, 5);
-                        match.AwayTeamPredictScore = rnd.Next(3);
-                        break;
-                    case int n when (n <= -6 && n >= -11):
-                        match.HomeTeamPredictScore = rnd.Next(1, 5);
-                        match.AwayTeamPredictScore = rnd.Next(3);
-                        break;
-                    case int n when (n <= 0 && n >= -5):
-                        match.HomeTeamPredictScore = rnd.Next(1, 4);
-                        match.AwayTeamPredictScore = rnd.Next(3);
-                        break;
-                    case int n when (n <= 5 && n >= 1):
-                        match.HomeTeamPredictScore = rnd.Next(3);
-                        match.AwayTeamPredictScore = rnd.Next(3);
-                        break;
-                    case int n when (n <= 11 && n >= 6):
-                        match.HomeTeamPredictScore = rnd.Next(2);
-                        match.AwayTeamPredictScore = rnd.Next(1, 4);
-                        break;
-                    case int n when (n <= 17 && n >= 12):
-                        match.HomeTeamPredictScore = rnd.Next(2);
-                        match.AwayTeamPredictScore = rnd.Next(1, 4);
-                        break;
-                    case int n when (n >= 18):
-                        match.HomeTeamPredictScore = rnd.Next(2);
-                        match.AwayTeamPredictScore = rnd.Next(2, 5);
-                        break;
-                }
+                    var matchForecast = ForecastMatch(diff, rnd);
+                    if (matchForecast.HomeScore > matchForecast.AwayScore)
+                    {
+                        match.HomeWinForecast += 1;
+                        matchForecast.ForecastResult = "Home";
+                    }
+                    else if (matchForecast.HomeScore < matchForecast.AwayScore)
+                    {
+                        match.AwayWinForecast += 1;
+                        matchForecast.ForecastResult = "Away";
+                    }
+                    else
+                    {
+                        match.DrawForecast += 1;
+                        matchForecast.ForecastResult = "Draw";
+                    }
+                    listForecasts.Add(matchForecast);
+                }       
+
+                // Get forecast outcome
+                MatchForecast mForecast;
+                if (match.HomeWinForecast > match.AwayWinForecast && match.HomeWinForecast > match.DrawForecast)
+                    mForecast = listForecasts.Where(x => x.ForecastResult == "Home").Last();           
+                else if (match.AwayWinForecast > match.HomeWinForecast && match.AwayWinForecast > match.DrawForecast)
+                    mForecast = listForecasts.Where(x => x.ForecastResult == "Away").Last();
+                else
+                    mForecast = listForecasts.Where(x => x.ForecastResult == "Draw").Last();
+
+                match.HomeTeamPredictScore = mForecast.HomeScore;
+                match.AwayTeamPredictScore = mForecast.AwayScore;
+
             }
 
             return matchDetails;
@@ -100,7 +103,10 @@ namespace FootballScorePredictor.Models
                         AwayTeamID = match.AwayTeamID,
                         HomeScoreForecast = match.HomeTeamPredictScore,
                         AwayScoreForecast = match.AwayTeamPredictScore,
-                        ForecastDate = DateTime.Now
+                        ForecastDate = DateTime.Now,
+                        HomeWinForecast = match.HomeWinForecast,
+                        AwayWinForecast = match.AwayWinForecast,
+                        DrawForecast = match.DrawForecast
                     };
 
                     tdc.Forecasts.InsertOnSubmit(forecast);
@@ -118,14 +124,22 @@ namespace FootballScorePredictor.Models
                 var forecasts = tdc.Forecasts.Where(x => x.LeagueID == leagueID && x.Round == round).ToList();
                 foreach (var item in forecasts)
                 {
+                    if (item.HomeWinForecast == null)
+                        item.HomeWinForecast = 0;
+                    if (item.AwayWinForecast == null)
+                        item.AwayWinForecast = 0;
+                    if (item.DrawForecast == null)
+                        item.DrawForecast = 0;
+
                     var prediction = new Predictions()
                     {
                         MatchID = item.MatchID,
                         HomeScore = item.HomeScoreForecast.Value,
                         AwayScore = item.AwayScoreForecast.Value,
+                        HomeWinForecast = item.HomeWinForecast.Value,
+                        AwayWinForecast = item.AwayWinForecast.Value,
+                        DrawForecast = item.DrawForecast.Value
                     };
-
-
 
                     // Compare against result (If match played) to get CorrectResult / CorrectScore outcome
                     var result = tdc.Results.Where(x => x.MatchID == item.MatchID).FirstOrDefault();
@@ -166,7 +180,9 @@ namespace FootballScorePredictor.Models
                                 HomeTeamID = result.HomeTeamID,
                                 AwayTeamID = result.AwayTeamID,
                                 HomeScore = result.HomeScore,
-                                AwayScore = result.AwayScore
+                                AwayScore = result.AwayScore,
+                                MatchDate = result.MatchDate,
+                                MatchTime = result.MatchTime
                             };
                             tdc.Results.InsertOnSubmit(mResult);
                         }
@@ -175,5 +191,51 @@ namespace FootballScorePredictor.Models
                 }
             }
         }
+
+        // Forecast the Match
+        private static MatchForecast ForecastMatch(int diff, Random rnd)
+        {
+            // Make the predictions         
+            var mForecast = new MatchForecast();
+
+            switch (diff)
+            {
+                case int n when (n <= -18):
+                    mForecast.HomeScore = rnd.Next(1, 6); // 1 to 6 goals
+                    mForecast.AwayScore = rnd.Next(3); // Max 2 goals
+                    break;
+                case int n when (n <= -12 && n >= -17):
+                    mForecast.HomeScore = rnd.Next(1, 5); // 1 to 5 goals
+                    mForecast.AwayScore = rnd.Next(3); // Max 2 goals
+                    break;
+                case int n when (n <= -6 && n >= -11):
+                    mForecast.HomeScore = rnd.Next(1, 4); // 1 to 4 goals
+                    mForecast.AwayScore = rnd.Next(3); // Max 2 goals
+                    break;
+                case int n when (n <= 0 && n >= -5):
+                    mForecast.HomeScore = rnd.Next(3); // Max 2 goals 
+                    mForecast.AwayScore = rnd.Next(3); // Max 2 goals
+                    break;
+                case int n when (n <= 5 && n >= 1):
+                    mForecast.HomeScore = rnd.Next(3); // Max 2 goals
+                    mForecast.AwayScore = rnd.Next(3); // max 2 goals
+                    break;
+                case int n when (n <= 11 && n >= 6):
+                    mForecast.HomeScore = rnd.Next(3); // Max 2 goals
+                    mForecast.AwayScore = rnd.Next(1, 4); // 1 to 4 goals
+                    break;
+                case int n when (n <= 17 && n >= 12):
+                    mForecast.HomeScore = rnd.Next(3); // Max 2 goals 
+                    mForecast.AwayScore = rnd.Next(1, 4); // 1 to 4 goals
+                    break;
+                case int n when (n >= 18):
+                    mForecast.HomeScore = rnd.Next(3); // Max 2 goals
+                    mForecast.AwayScore = rnd.Next(1, 5); // 1 to 5 goals
+                    break;
+            }
+
+            return mForecast;
+        }
+
     }
 }

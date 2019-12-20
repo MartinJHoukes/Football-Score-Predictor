@@ -1,17 +1,44 @@
-﻿@{
-    ViewBag.Title = "Contact";
-}
-<h2>@ViewBag.Title.</h2>
-<h3>@ViewBag.Message</h3>
+﻿
+<div class="mt-3">
+    <table id="testTable" class="table table-bordered">
+        <thead>
+            <tr>
+                <td>
+                    MatchID
+                </td>
+                <td>
+                    Match Date
+                </td>
+            </tr>
+        </thead>
+        <tbody id="divResults">
+        </tbody>
+    </table>
+</div>
 
-<address>
-    One Microsoft Way<br />
-    Redmond, WA 98052-6399<br />
-    <abbr title="Phone">P:</abbr>
-    425.555.0100
-</address>
+<script src="~/Scripts/jquery-3.3.1.min.js"></script>
+<link href="~/Content/DataTables/css/jquery.dataTables.min.css" rel="stylesheet" />
 
-<address>
-    <strong>Support:</strong>   <a href="mailto:Support@example.com">Support@example.com</a><br />
-    <strong>Marketing:</strong> <a href="mailto:Marketing@example.com">Marketing@example.com</a>
-</address>
+
+
+<script>
+
+    // Get All Results
+    $(document).ready(function () {
+
+
+        // Load ALl Results
+        $.post("/Home/GetAllResults", null).done(function (results) {
+            $.each(results, function (index, result) {
+                let rRow = "<tr><td>" + result.MatchID + "</td><td>" + result.MatchDate + "</td></tr>"
+                $('#divResults').append(rRow);
+            });
+
+
+            $('#testTable').DataTable();
+        });
+
+    });
+
+</script>
+

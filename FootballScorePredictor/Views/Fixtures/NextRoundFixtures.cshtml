@@ -3,6 +3,22 @@
 }
 
 <style>
+
+    .centered {
+        position: fixed;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+    }
+
+    #enterCode {
+        width: 250px;
+        border: 1px solid grey;
+        background-color: beige;
+        padding: 20px;
+        display: none;
+    }
+
     #prevRnd, #ntxRnd {
         font-size: 18px;
     }
@@ -19,11 +35,13 @@
     }
 
     .homeForecastScore, .awayForecastScore {
+        font-family: 'Comic Sans MS';
         width: 1.5rem;
         height: 2rem;
         text-align: center;
         border: 1px solid silver;
         color: navy;
+        font-weight: bold;
     }
 
     .correctScore {
@@ -34,8 +52,6 @@
 
     .correctResult {
         border: 3px solid #0b7d19;
-        background-color: green;
-        color: white;
     }
 </style>
 
@@ -43,11 +59,11 @@
     <span id="currentRnd" style="display: none">@ViewBag.Round</span>
     @if (@ViewBag.LeagueID == 2021)
     {
-        <span class="mt-5 mb-3 pt-2 pb-2 badge badge-success" style="font-size: 16px; font-weight: normal">Premier League Fixtures and Predictions</span><br />
+        <span class="mt-5 mb-3 pt-2 pb-2 badge badge-success" style="font-size: 16px; font-weight: normal">Premier League Fixtures and Forecasts</span><br />
     }
     else
     {
-        <span class="mt-5 mb-3 pt-2 pb-2 badge badge-warning" style="font-size: 16px; font-weight: normal">Championship Fixtures and Predictions</span><br />
+        <span class="mt-5 mb-3 pt-2 pb-2 badge badge-warning" style="font-size: 16px; font-weight: normal">Championship Fixtures and Forecasts</span><br />
     }
 
     <div class="col-md-12">
@@ -58,7 +74,7 @@
         </label>
     </div>
     <div class="col-md-12">
-        <button id="btnMakePredictions" class="btn btn-outline-danger btn-sm" style="display: none" onclick="MakePredictions('@ViewBag.LeagueID', $('#currentRnd').text());"><i class="fa fa-edit"></i> Make Predictions</button>
+        <button id="btnMakePredictions" class="btn btn-outline-danger btn-sm" style="display: none" onclick="ForecastPassword();"><i class="fa fa-edit"></i> Make Forecasts</button>
     </div>
 
     <div class="row" id="divMatches">
@@ -67,11 +83,33 @@
 
 </div>
 
+<!--  ENTER CODE TO MAKE FORECASTS-->
+<div id="enterCode" class="centered shadow rounded">
+    <div class="form-group">
+        <label for="forecastPassword"><i>Enter Forecast Password</i></label>
+        <input type="password" class="form-control" id="forecastPassword" placeholder="Password">
+    </div>
+    <button id="btnCheckPassword" class="btn btn-sm btn-outline-success pull-right">Submit</button>
+</div>
+
+
+
+
 <script src="~/Scripts/jquery-3.3.1.min.js"></script>
 <link href="~/Content/font-awesome.min.css" rel="stylesheet" />
 <script src="~/Scripts/FootballForecast.js"></script>
 
 <script>
+
+   $(document).mouseup(function(e){
+    var container = $("#enterCode");
+
+    // If the target of the click isn't the container
+       if (!container.is(e.target) && container.has(e.target).length === 0)
+       {
+           container.slideUp('fast');
+       }
+   });
 
     // Document Ready
     $(document).ready(function () {
@@ -103,6 +141,35 @@
         }
         GetMatches(@ViewBag.LeagueID, thisRnd);
     };
+
+
+
+    // Forecast Password Popup
+    function ForecastPassword() {
+        $('#forecastPassword').text('');
+        $('#enterCode').slideDown('fast');
+    }
+
+    // Check Password
+    $('#btnCheckPassword').click(function () {
+
+        console.log(this);
+         let thisPassword = $('#forecastPassword').val();
+        $.post("/Fixtures/CheckForecastPassword", { password: thisPassword }).done(function (data) {
+            if (data === "Correct") {
+                let leagueID = '@ViewBag.LeagueID';
+                let currentRd = $('#currentRnd').text();
+                $('#enterCode').slideUp('fast');
+                MakePredictions(leagueID, currentRd);
+            } else {
+
+                $('#enterCode').slideUp('fast');
+                toastr.options.positionClass = 'centered';
+                toastr.error('Incorrect password entered ..');
+            }
+        });
+    })
+
 
     // Send Match details to the controller to make and save the predictions
     function MakePredictions(leagueID, currentRnd) {
@@ -143,22 +210,41 @@
                     data: data,
                     success: function (matchPredictions) {
                         $.each(matchPredictions, function (mIndex, match) {
-                             // Show processing Image
-                            var img = $('#' + match.MatchID.toString() + 'image')
-                            $(img).show();
 
-                            setTimeout(function () {
-                                 $(img).hide();
-                                 var mSpan = $('#' + match.MatchID.toString())
+                            var mSpan = $('#' + match.MatchID.toString())
 
-                                // Home Forecast Score
-                                var hFScore = $(mSpan).closest('div').find('.homeForecastScore');
-                                $(hFScore).text(match.HomeTeamPredictScore.toString());
+                            // Home Forecast Score
+                            var hFScore = $(mSpan).closest('div').find('.homeForecastScore');
+                            $(hFScore).text(match.HomeTeamPredictScore.toString());
 
-                                // Away Forecast Score
-                                var aFScore = $(mSpan).closest('div').find('.awayForecastScore');
-                                $(aFScore).text(match.AwayTeamPredictScore.toString());
-                            }, 3000);
+                            // Away Forecast Score
+                            var aFScore = $(mSpan).closest('div').find('.awayForecastScore');
+                            $(aFScore).text(match.AwayTeamPredictScore.toString());
+
+                            // Progress Bars displaying Forcast %
+                            $('#' + match.MatchID.toString() + 'divForecastPercent').show();
+
+                            // Home Win Forecast (%)
+                            let mHomeWin = $('div').find('div#homeWinForecast' + match.MatchID.toString());                             
+                            $(mHomeWin).animate({
+                                width: match.HomeWinForecast.toString() + "%"
+                            }, 1500);
+                            $(mHomeWin).text(match.HomeWinForecast.toString() + "%");
+
+                            // Away Win Forecast (%)
+                            let mAwayWin = $('div').find('div#awayWinForecast' + match.MatchID.toString());                               
+                            $(mAwayWin).animate({
+                                width: match.AwayWinForecast.toString() + "%"
+                            }, 1500);
+                            $(mAwayWin).text(match.AwayWinForecast.toString() + "%");
+
+                            // Draw Forecast (%)
+                            let mDraw = $('div').find('div#drawForecast' + match.MatchID.toString());                          
+                            $(mDraw).animate({
+                                width: match.DrawForecast.toString() + "%"
+                            }, 1500);
+                            $(mDraw).text(match.DrawForecast.toString() + "%");
+
                          });
                     },
 
@@ -213,6 +299,13 @@
                 var homeTeamImage = tImage[match.homeTeam.id];
                 var awayTeamScore = checkNull(match.score.fullTime.awayTeam);
                 var awayTeamImage = tImage[match.awayTeam.id];
+
+                if (matchStatus === "POSTPONED") {
+                    homeTeamScore = "P";
+                    awayTeamScore = "P"
+                }
+
+
                 var classScore = "bg-secondary";
                 var fScore = "";
                 var fScoreClass = "col-md-12";
@@ -221,17 +314,17 @@
                     fScoreClass += " text-secondary";
                     fScore = "Final Score";
 
-                    // Collect Match Result ********
+                    // Collect Match Result Details********
                     var result = {
                             'MatchID': match.id,
                             'HomeTeamID': match.homeTeam.id,
                             'AwayTeamID': match.awayTeam.id,
                             'HomeScore': homeTeamScore,
-                            'AwayScore': awayTeamScore
+                            'AwayScore': awayTeamScore,
+                            'MatchDate': dateStr,
+                            'MatchTime': timeStr
                     };
                     resultsList.push(result);
-
-                    console.log(result);
                     // ******************************
                 }
                 else if (matchStatus === "PAUSED" || matchStatus === "IN_PLAY") {
@@ -240,61 +333,84 @@
                     fScore = "'Live'";
                 };
 
-                var matchDetails = tools.getStringBuilder()
-                    .append('<div class="card ' + fixColor + ' mb-3 mt-3 ml-3 border-dark" style="width: 22rem;">')
-                    .append('<span id=' + matchID + ' style="display: none">' + matchID + '</span>')
-                    .append('<div class="card-header">' + dateStr + '<span class="pull-right" style="color: navy; font-size: 14px">' + timeStr + '</span></div>')
-                    .append('<div class="card-body bg-white">')
-                    .append('<div class="col-lg-12 text-secondary" style="text-align: center; font-size: 14px; font-weight: bold; margin-left: -7px">Forecast</div>') // Text Forecast
-                    .append('<div class="row d-flex align-items-center">')
-                    .append('<div class="d-flex align-items-center ml-3" style="width: 6rem; height: 4rem; color: navy; text-align: center"><img src="' + homeTeamImage + '" height="45px" style="margin-top: -100px; margin-right: -40px"></img>' + homeTeam + '</div>') // Home Team)
-                    .append('<div class="ml-1 mr-1" style="width: 1.5rem; height: 5rem; text-align: center">') // Home Scores
-                    .append('<div id="homeForecast' + matchID + '" class="mb-1 homeForecastScore"></div>') // Home Forecast Score
-                    .append('<div class="' + classScore + '" style="width: 1.5rem; height: 2rem; text - align: center; border: 1px solid silver; font-weight: bold">' + homeTeamScore + '</div>') // Home Final Score
-                    .append('</div>') // /Home Scores
-                    .append('<div style="width: 2rem; height: 2rem; text-align: center">v</div>')
-                    .append('<div class="ml-1 mr-1" style="width: 1.5rem; height: 5rem; text-align: center">') // Away Scores
-                    .append('<div id="awayForecast' + matchID + '" class="mb-1 awayForecastScore"></div>') // Away Forecast Score
-                    .append('<div class="' + classScore + '" style="width: 1.5rem; height: 2rem; text-align: center; border: 1px solid silver; font-weight: bold">' + awayTeamScore + '</div>') // Away Final Score
-                    .append('</div>') // /Away scores
-                    .append('<div class="d-flex align-items-center ml-3" style="width: 6rem; height: 4rem; color: navy; text-align: center">' + awayTeam + '<img src="' + awayTeamImage + '" height="45px" style="margin-top: -100px; margin-left: -40px"></img></div>') // Away Team)
-                    .append('<div id="matchStatus" class="' + fScoreClass + '" style="text-align: center; font-size: 14px; font-weight: bold; margin-left: -7px; margin-top: -12px">' + fScore + '</div>') // Text Final Score
-                    .append('<img src="/Images/giphyWait.gif" id=' + matchID + 'image class="pImage" />')
-                    .append('</div>') // /card-body
-                    .append('<div class="card-footer bg-white clearfix">')
-                    .append('<div id="' + matchID + 'tick" class="row pull-right" style="min-height: 45px"><img src="/Images/tick.png" width="40px" class="pr-1 mx-4 my-1" style="display: none" /></div>')
-                     .append('</div>') // card footer
-                    .append('</div>') // /card
-                    .toString();
+
+                 var matchDetails = tools.getStringBuilder()
+                .append('<div id="forecastDiv' + matchID + '" class="card ' + fixColor + ' mt-3 ml-2 rounded" style="width: 21rem;">')
+                .append('<span id=' + matchID + ' style="display: none">' + matchID + '</span>')
+                .append('<div class="card-header">' + dateStr + '<span class="pull-right" style="color: navy; font-size: 14px">' + timeStr + '</span></div>')
+                .append('<div class="card-body bg-white">')
+                .append('<div class="col-lg-12 text-secondary" style="text-align: center; font-size: 14px; font-weight: bold; margin-left: -7px">Forecast</div>') // Text Forecast
+                .append('<div class="row d-flex align-items-center">')
+                .append('<div class="d-flex align-items-center ml-3" style="width: 6rem; height: 4rem; color: navy; text-align: center"><img src="' + homeTeamImage + '" height="45px" style="margin-top: -100px; margin-right: -40px"></img>' + homeTeam + '</div>') // Home Team)
+                .append('<div class="ml-1 mr-1" style="width: 1.5rem; height: 5rem; text-align: center">') // Home Scores
+                .append('<div id="homeForecast' + matchID + '" class="mb-1 homeForecastScore"></div>') // Home Forecast Score
+                .append('<div class="' + classScore + '" style="width: 1.5rem; height: 2rem; text-align: center; border: 1px solid silver; font-weight: bold">' + homeTeamScore + '</div>') // Home Final Score
+                .append('</div>') // /Home Scores
+                .append('<div style="width: 2rem; height: 2rem; text-align: center">v</div>')
+                .append('<div class="ml-1 mr-1" style="width: 1.5rem; height: 5rem; text-align: center">') // Away Scores
+                .append('<div id="awayForecast' + matchID + '" class="mb-1 awayForecastScore"></div>') // Away Forecast Score
+                .append('<div class="' + classScore + '" style="width: 1.5rem; height: 2rem; text-align: center; border: 1px solid silver; font-weight: bold">' + awayTeamScore + '</div>') // Away Final Score
+                .append('</div>') // /Away scores
+                .append('<div class="d-flex align-items-center ml-3" style="width: 6rem; height: 4rem; color: navy; text-align: center">' + awayTeam + '<img src="' + awayTeamImage + '" height="45px" style="margin-top: -100px; margin-left: -40px"></img></div>') // Away Team)
+                .append('<div id="matchStatus" class="' + fScoreClass + '" style="text-align: center; font-size: 14px; font-weight: bold; margin-left: -7px; margin-top: -12px">' + fScore + '</div>') // Text Final Score
+                .append('<img src="/Images/giphyWait.gif" id=' + matchID + 'image class="pImage" />')
+                .append('</div>') // /card-body
+                .append('<div class="card-footer bg-white clearfix">')
+
+                // Forecast Tick 
+                .append('<div id="' + matchID + 'tick" class="row pull-right"><img src="/Images/tick.png" width="25px" height="20" class="pr-1 mx-4 my-1" style="display: none" /></div>')
+
+                // Forecast Percentages
+                .append('<div id="' + matchID + 'divForecastPercent" style="display: none;">')      
+                .append('<div class="text-success font-italic">Forecast %</div>')
+                .append('<span class="forecastLabel">Home Win</span><div class="progress"><div id="homeWinForecast' + matchID + '" class="progress-bar bg-forecastpercent" role="progressbar" aria-valuemin="0" aria-valuemax="100"></div></div>')
+                .append('<span class="forecastLabel">Draw</span><div class="progress"><div id="drawForecast' + matchID + '" class="progress-bar bg-forecastpercent" role="progressbar" aria-valuemin="0" aria-valuemax="100"></div></div>')
+                .append('<span class="forecastLabel">Away Win</span><div class="progress"><div id="awayWinForecast' + matchID + '" class="progress-bar bg-forecastpercent" role="progressbar" aria-valuemin="0" aria-valuemax="100"></div></div>')
+                .append('</div>')
+
+                
+                .append('</div>') // card footer
+                .append('</div>') // /card
+                .toString();
                 $('#divMatches').append(matchDetails);
+
+
+
             })
 
             // Send any match results to the database
             let url = "/Fixtures/SaveResults";
-           $.post(url, { 'resultsList': resultsList });
-        });
-        $('#currentRnd').text(matchDay);
-        $('#rndHeader').text(' Round ' + matchDay);
+            $.post(url, { 'resultsList': resultsList });
+
+            $('#currentRnd').text(matchDay);
+            $('#rndHeader').text(' Round ' + matchDay);
 
 
         // Check and display previous predictions and results for these matches
         GetPredictions(league, matchDay);
+
+
+        });
+
     };
 
 
     // Get and display any previous predictions with forecast outcome
     function GetPredictions(league, matchDay) {
 
+
         let url = "/Fixtures/GetPredictions";
         $.post(url, { 'leagueID': league, 'round': matchDay }).done(function (predictions) {
 
-
-            if (predictions.length == 0 && matchDay == '@ViewBag.Round')
-            {
-               $('#btnMakePredictions').show();
-            }
-
+            if (predictions.length == 0) {
+                $('#btnMakePredictions').show();
+            };
+            
             $.each(predictions, function (mIndex, pred) {
+
+                // Forecast Div (Card)
+                let forecastDiv = $('div#forecastDiv' + pred.MatchID.toString());
+
                 // Home Score Forecast
                 let mHomeForecast = $('div').find('div#homeForecast' + pred.MatchID.toString());
                 $(mHomeForecast).text(pred.HomeScore);
@@ -303,21 +419,50 @@
                 let mAwayForecast = $('div').find('div#awayForecast' + pred.MatchID.toString());
                 $(mAwayForecast).text(pred.AwayScore);
 
+
+                // Progress Bars displaying Forcast %
+                if (pred.HomeWinForecast > 0 || pred.AwayWinForecast > 0 || pred.DrawForecast > 0) {
+                    $('#' + pred.MatchID.toString() + 'divForecastPercent').show();
+                }
+
+                // Home Win Forecast (%)
+                let mHomeWin = $('div').find('div#homeWinForecast' + pred.MatchID.toString());                             
+                $(mHomeWin).animate({
+                    width: pred.HomeWinForecast.toString() + "%"
+                }, 1500);
+                $(mHomeWin).text(pred.HomeWinForecast.toString() + "%");
+
+                // Away Win Forecast (%)
+                let mAwayWin = $('div').find('div#awayWinForecast' + pred.MatchID.toString());                               
+                $(mAwayWin).animate({
+                    width: pred.AwayWinForecast.toString() + "%"
+                }, 1500);
+                $(mAwayWin).text(pred.AwayWinForecast.toString() + "%");
+
+                // Draw Forecast (%)
+                let mDraw = $('div').find('div#drawForecast' + pred.MatchID.toString());                          
+                $(mDraw).animate({
+                    width: pred.DrawForecast.toString() + "%"
+                }, 1500);
+                $(mDraw).text(pred.DrawForecast.toString() + "%");
+
+
                 // Display the outcome
-                 let tickDiv = $('div').find('div#' + pred.MatchID.toString() + 'tick');
+                let tickDiv = $('div').find('div#' + pred.MatchID.toString() + 'tick');
                 if (pred.Outcome === "CorrectScore") {
                     $(mHomeForecast).addClass('correctScore');
                     $(mAwayForecast).addClass('correctScore');
-                    $(tickDiv).addClass('bg-success');
+                    $(tickDiv).addClass('bg-success rounded');
                     $(tickDiv).children('img').first().show();
+                    $(forecastDiv).removeClass('bg-light').addClass('bg-success text-white border border-success')
 
                 } else if (pred.Outcome === "CorrectResult") {
                     $(mHomeForecast).addClass('correctResult');
                     $(mAwayForecast).addClass('correctResult');
                     $(tickDiv).children('img').first().show();
+                    $(forecastDiv).removeClass('bg-light').addClass('bg-success text-white border border-success')
                 }
             });
-
         });
 
     };

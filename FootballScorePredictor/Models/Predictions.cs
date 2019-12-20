@@ -11,6 +11,9 @@ namespace FootballScorePredictor
         public int HomeScore { get; set; }
         public int AwayScore { get; set; }
         public string Outcome { get; set; }
+        public int HomeWinForecast { get; set; } = 0;
+        public int AwayWinForecast { get; set; } = 0;
+        public int DrawForecast { get; set; } = 0;
 
     }
 }

@@ -1,0 +1,79 @@
+﻿
+@{
+    ViewBag.Title = "PremierLeague";
+}
+
+<div style="min-height: 600px">
+
+    <div class="row d-flex justify-content-center">
+        <div class="col-md-9 col-sm-12">
+            <span style="display: none" id="nextRound">100</span>
+            <button id="roundHeader" class="btn btn-sm btn-outline-success mt-5" onclick="GetNextFixtures($('#nextRound').text());"></button>
+            <table id="tblLeague" class="table-bordered table-responsive-sm mt-3 mb-2">
+                <thead>
+                    <tr class="bg-white" id="tblHeading" style="height: 40px; font-style: italic">
+                        <th class="d-none d-sm-table-cell"></th>
+                        <th id="tblLeagueTitle" class="pl-3 pr-4 font-weight-bold">
+                            Premier League
+                        </th>
+                        <th class="font-weight-normal text-center">
+                            Played
+                        </th>
+                        <th class="font-weight-normal text-center d-none d-sm-table-cell">
+                            Won
+                        </th>
+                        <th class="font-weight-normal text-center d-none d-sm-table-cell">
+                            Drawn
+                        </th>
+                        <th class="font-weight-normal text-center d-none d-sm-table-cell">
+                            Lost
+                        </th>
+                        <th class="font-weight-normal text-center d-none d-sm-table-cell">
+                            For
+                        </th>
+                        <th class="font-weight-normal text-center d-none d-sm-table-cell">
+                            Against
+                        </th>
+                        <th class="font-weight-normal text-center d-none d-sm-table-cell">
+                            GD
+                        </th>
+                        <th class="font-weight-normal text-center">
+                            Points
+                        </th>
+                    </tr>
+                </thead>
+                <tbody id="tblBody"></tbody>
+                <tfoot>
+                    <tr>
+                        <td colspan="10" height="35px">
+                            <div style="font-size: 12px; text-align: right; color: grey; background-color: white; padding-right: 10px; font-style: italic">
+                                <span>Last Updated:  </span>
+                                <span id="lblLastUpdated" class="bg-light text-primary p-1"></span>
+                            </div>
+                        </td>
+                    </tr>
+                </tfoot>
+            </table>
+        </div>
+    </div>
+
+</div>
+
+<script src="~/Scripts/jquery-3.3.1.min.js"></script>
+<script src="~/Scripts/FootballForecast.js"></script>
+<link href="~/Content/font-awesome.min.css" rel="stylesheet" />
+
+<script>
+
+    $(document).ready(function () {
+        GetTableAPI("PREM");
+    });
+
+
+    function GetNextFixtures(nextRound) {
+        var url = "/Fixtures/NextRoundFixtures?leagueID=2021&nextRound=" + nextRound;
+        window.location.href = url;
+    };
+
+</script>
+

@@ -1,0 +1,160 @@
+﻿@model TeamStanding
+
+@{
+    ViewBag.Title = "Team Results";
+}
+
+<style>
+    .tImage {
+        height: 35px;
+        padding: 5px;
+    }
+
+    #teamHeadSInfo td {
+        width: 38px;
+        text-align: center;
+    }
+
+    
+    #teamHeadLInfo td {
+        width: 60px;
+        text-align: center;
+    }
+</style>
+
+
+<div class="stickTop">
+    <img class="my-2" style="max-width: 40px; max-height: 40px" src='@Model.ImagePath' />
+    <span class="pl-2"><b><i>@Model.TeamName</i></b></span>
+    <table  class="table-sm table-bordered mb-1">
+
+        <tr id="teamHeadSInfo" class="d-md-none">
+            <td>
+                Pos
+            </td>
+            <td>
+                MP
+            </td>
+            <td>
+                W
+            </td>
+            <td>
+                D
+            </td>
+            <td>
+                L
+            </td>
+            <td>
+                GF
+            </td>
+            <td>
+                GA
+            </td>
+            <td>
+                GD
+            </td>
+            <td>
+                Pts
+            </td>
+        </tr>
+        <tr id="teamHeadLInfo"  class="d-none d-xl-table-row">
+            <td>
+                Position
+            </td>
+            <td>
+                Played
+            </td>
+            <td>
+                Won
+            </td>
+            <td>
+                Drawn
+            </td>
+            <td>
+                Lost
+            </td>
+            <td>
+                For
+            </td>
+            <td>
+                Against
+            </td>
+            <td>
+                Diff.
+            </td>
+            <td>
+                Points
+            </td>
+
+        <tr class="text-center">
+            <td>
+                @Model.Position
+            </td>
+            <td>
+                @Model.Played
+            </td>
+            <td class="bg-success text-white">
+                @Model.Won
+            </td>
+            <td class="bg-warning">
+                @Model.Drawn
+            </td>
+            <td class="bg-danger text-white">
+                @Model.Lost
+            </td>
+            <td>
+                @Model.For
+            </td>
+            <td>
+                @Model.Against
+            </td>
+            <td>
+                @Model.GD
+            </td>
+            <td class="ptsCol">
+                @Model.Points
+            </td>
+        </tr>
+    </table>
+    <div><b><i>Results</i></b></div>
+</div>
+
+<div class="container-fluid">
+    <div class="row d-flex justify-content-center">
+        @foreach (var item in Model.Results)
+        {
+            <div class="card mt-3 ml-2 rounded border-success" style="width: 21rem">
+                <div class="card-header">
+                    @item.MatchDate
+                </div>
+                <div class="card-body">
+                    <table>
+                        <tr>
+                            <td>
+                                <img class="tImage" src='@item.HomeTeamImage' />
+                            </td>
+                            <td width="200">
+                                @item.HomeTeam
+                            </td>
+                            <td class="text-center" width="40">
+                                @item.HomeScore
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>
+                                <img class="tImage" src='@item.AwayTeamImage' />
+                            </td>
+                            <td width="200">
+                                @item.AwayTeam
+                            </td>
+                            <td class="text-center" width="40">
+                                @item.AwayScore
+                            </td>
+                        </tr>
+                    </table>
+                </div>
+            </div>
+        }
+    </div>
+
+</div>

@@ -2,16 +2,29 @@
 <ordesignerObjectsDiagram dslVersion="1.0.0.0" absoluteBounds="0, 0, 11, 8.5" name="FootballForcast">
   <DataContextMoniker Name="/FootballForcastDataContext" />
   <nestedChildShapes>
-    <classShape Id="19837690-2d83-4d55-bf5b-d8d9991036f6" absoluteBounds="1, 0.75, 2, 3.3093082682291666">
+    <classShape Id="19837690-2d83-4d55-bf5b-d8d9991036f6" absoluteBounds="0.5, 0.625, 2, 3.8862125651041666">
       <DataClassMoniker Name="/FootballForcastDataContext/Forecast" />
       <nestedChildShapes>
-        <elementListCompartment Id="7ac3189f-c438-45e0-9fb9-e4c631646384" absoluteBounds="1.0149999999999997, 1.21, 1.9700000000000002, 2.7493082682291665" name="DataPropertiesCompartment" titleTextColor="Black" itemTextColor="Black" />
+        <elementListCompartment Id="7ac3189f-c438-45e0-9fb9-e4c631646384" absoluteBounds="0.51499999999999968, 1.085, 1.9700000000000002, 3.3262125651041665" name="DataPropertiesCompartment" titleTextColor="Black" itemTextColor="Black" />
       </nestedChildShapes>
     </classShape>
-    <classShape Id="e7c8d83b-a2a2-47e4-80d8-af54d70594e2" absoluteBounds="3.375, 0.875, 2, 1.9631982421875">
+    <classShape Id="e7c8d83b-a2a2-47e4-80d8-af54d70594e2" absoluteBounds="3.25, 0.75, 2, 2.3478011067708335">
       <DataClassMoniker Name="/FootballForcastDataContext/Result" />
       <nestedChildShapes>
-        <elementListCompartment Id="a2b18356-5850-400a-810b-8eebdb98601a" absoluteBounds="3.3899999999999997, 1.335, 1.9700000000000002, 1.4031982421875" name="DataPropertiesCompartment" titleTextColor="Black" itemTextColor="Black" />
+        <elementListCompartment Id="a2b18356-5850-400a-810b-8eebdb98601a" absoluteBounds="3.2649999999999997, 1.21, 1.9700000000000002, 1.7878011067708333" name="DataPropertiesCompartment" titleTextColor="Black" itemTextColor="Black" />
+      </nestedChildShapes>
+    </classShape>
+    <associationConnector edgePoints="[(2.5 : 1.92390055338542); (3.25 : 1.92390055338542)]" fixedFrom="Algorithm" fixedTo="Algorithm">
+      <AssociationMoniker Name="/FootballForcastDataContext/Forecast/Forecast_Result" />
+      <nodes>
+        <classShapeMoniker Id="19837690-2d83-4d55-bf5b-d8d9991036f6" />
+        <classShapeMoniker Id="e7c8d83b-a2a2-47e4-80d8-af54d70594e2" />
+      </nodes>
+    </associationConnector>
+    <classShape Id="03d1c5c4-3cf9-4fe9-9fe6-6beae6bb7eb7" absoluteBounds="5.625, 0.875, 2, 1.5785953776041666">
+      <DataClassMoniker Name="/FootballForcastDataContext/Team" />
+      <nestedChildShapes>
+        <elementListCompartment Id="3b107fa8-2661-4753-9111-60c35ea68f6f" absoluteBounds="5.64, 1.335, 1.9700000000000002, 1.0185953776041665" name="DataPropertiesCompartment" titleTextColor="Black" itemTextColor="Black" />
       </nestedChildShapes>
     </classShape>
   </nestedChildShapes>

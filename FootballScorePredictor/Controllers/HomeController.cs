@@ -14,9 +14,28 @@ namespace FootballScorePredictor.Controllers
             return View();
         }
 
+        public ActionResult PremierLeague()
+        {
+            return View();
+        }
+
         public ActionResult Championship()
         {
             return View();
+        }
+
+        public ActionResult SaveCurrentStandings(string league, List<TeamStanding> teamStandings)
+        {
+            Session[league + "TeamStandings"] = teamStandings.ToList<TeamStanding>();
+
+            return null;
+        }
+
+        public ActionResult SaveTeamDetails(TeamDetails team)
+        {
+            TeamDetails.SaveTeamDetails(team);
+
+            return null;
         }
 
         public ActionResult About()
@@ -28,17 +47,18 @@ namespace FootballScorePredictor.Controllers
 
         public ActionResult Contact()
         {
-            ViewBag.Message = "Your contact page.";
-            var minNumber = MatchDetails.FindMinimum(16, 2);
-
+        
             return View();
         }
 
-        public ActionResult SaveCurrentStandings(string league, List<TeamStanding> teamStandings)
+        public JsonResult GetAllResults()
         {
-            Session[league + "TeamStandings"] = teamStandings.ToList<TeamStanding>();
+            var allResults = MatchResults.GetAllResults();
 
-            return null;
+            return Json(allResults, JsonRequestBehavior.AllowGet);
+
+
         }
+
     }
 }

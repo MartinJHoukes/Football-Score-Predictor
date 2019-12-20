@@ -3,6 +3,17 @@
     padding-bottom: 20px;
 }
 
+.homeTitle {
+
+    text-shadow: 4px 3px 2px grey;
+}
+
+@media only screen and (min-width : 1024px) {
+    .paddingHome {
+        height: 150px;
+    }
+}
+
 /* Set padding to keep content from hitting the edges */
 .body-content {
     padding-left: 15px;
@@ -21,4 +32,58 @@ input,
 select,
 textarea {
     max-width: 280px;
+}
+
+.stickTop {
+    background-color: white;
+    padding: 5px;
+    padding-left: 15px;
+    border-radius: 5px;
+    border: 1px solid darkgrey;
+    box-shadow: 3px 3px 3px grey;
+    margin-top: 5px;
+    position: -webkit-sticky; /* Safari */
+    position: sticky;
+    top: 0;
+    z-index: 200;
+}
+
+.teamImage {
+    Width: 20px;
+    Height: 20px;
+    margin-right: 5px;
+    margin-left: 5px;
+}
+
+.teamRow:hover {
+    cursor: pointer;
+}
+
+.figCol {
+    width: 60px;
+}
+
+.ptsCol {
+    background-color: greenyellow;
+}
+
+.colTeam {
+    max-width: 230px !important;
+    white-space: nowrap;
+    overflow: hidden;
+}
+
+.forecastLabel {
+    font-size: 10px;
+}
+
+.bg-forecastpercent {
+    background-color: #11196c;
+    font-size: 12px;
+    font-family: Calibri;
+}
+
+.progress.active .progress-bar {
+    -webkit-transition: none !important;
+    transition: none !important;
 }

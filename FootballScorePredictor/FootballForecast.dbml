@@ -1,5 +1,5 @@
-﻿<?xml version="1.0" encoding="utf-8"?><Database Name="FootballForecast" Class="FootballForcastDataContext" xmlns="http://schemas.microsoft.com/linqtosql/dbml/2007">
-  <Connection Mode="WebSettings" ConnectionString="Data Source=DESKTOP-291IIHT\SQLEXPRESS;Initial Catalog=FootballForecast;Integrated Security=True" SettingsObjectName="System.Configuration.ConfigurationManager.ConnectionStrings" SettingsPropertyName="FootballForecastConnectionString" Provider="System.Data.SqlClient" />
+﻿<?xml version="1.0" encoding="utf-8"?><Database Name="AvalonSciences_FootballForecast" Class="FootballForcastDataContext" xmlns="http://schemas.microsoft.com/linqtosql/dbml/2007">
+  <Connection Mode="WebSettings" ConnectionString="Data Source=mssql4.websitelive.net;Initial Catalog=AvalonSciences_FootballForecast;Persist Security Info=False;User ID=AvalonSciences_Admin;MultipleActiveResultSets=False;Connect Timeout=30;Encrypt=True;TrustServerCertificate=True" SettingsObjectName="System.Configuration.ConfigurationManager.ConnectionStrings" SettingsPropertyName="FootballForecastConnectionString" Provider="System.Data.SqlClient" />
   <Table Name="dbo.Forecast" Member="Forecasts">
     <Type Name="Forecast">
       <Column Name="ID" Type="System.Int32" DbType="Int NOT NULL IDENTITY" IsPrimaryKey="true" IsDbGenerated="true" CanBeNull="false" />
@@ -15,6 +15,10 @@
       <Column Name="ForecastDate" Type="System.DateTimeOffset" DbType="datetime" CanBeNull="true" />
       <Column Name="Round" Type="System.Int32" DbType="int" CanBeNull="true" />
       <Column Name="LeagueID" Type="System.Int32" DbType="int" CanBeNull="true" />
+      <Column Name="HomeWinForecast" Type="System.Int32" DbType="int" CanBeNull="true" />
+      <Column Name="AwayWinForecast" Type="System.Int32" DbType="int" CanBeNull="true" />
+      <Column Name="DrawForecast" Type="System.Int32" DbType="int" CanBeNull="true" />
+      <Association Name="Forecast_Result" Member="Results" ThisKey="MatchID" OtherKey="MatchID" Type="Result" />
     </Type>
   </Table>
   <Table Name="dbo.Result" Member="Results">
@@ -25,6 +29,17 @@
       <Column Name="AwayTeamID" Type="System.Int32" DbType="Int NOT NULL" CanBeNull="false" />
       <Column Name="HomeScore" Type="System.Int32" DbType="Int NOT NULL" CanBeNull="false" />
       <Column Name="AwayScore" Type="System.Int32" DbType="Int NOT NULL" CanBeNull="false" />
+      <Column Name="MatchDate" Type="System.String" DbType="varchar(50)" CanBeNull="true" />
+      <Column Name="MatchTime" Type="System.String" DbType="varchar(50)" CanBeNull="true" />
+      <Association Name="Forecast_Result" Member="Forecast" ThisKey="MatchID" OtherKey="MatchID" Type="Forecast" IsForeignKey="true" />
+    </Type>
+  </Table>
+  <Table Name="AvalonSciences_Admin.Team" Member="Teams">
+    <Type Name="Team">
+      <Column Name="ID" Type="System.Int32" DbType="Int NOT NULL IDENTITY" IsPrimaryKey="true" IsDbGenerated="true" CanBeNull="false" />
+      <Column Name="TeamID" Type="System.Int32" DbType="Int NOT NULL" CanBeNull="false" />
+      <Column Name="TeamName" Type="System.String" DbType="VarChar(200) NOT NULL" CanBeNull="false" />
+      <Column Name="ImagePath" Type="System.String" DbType="VarChar(200)" CanBeNull="true" />
     </Type>
   </Table>
 </Database>

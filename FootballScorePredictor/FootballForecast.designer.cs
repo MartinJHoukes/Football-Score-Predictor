@@ -22,7 +22,7 @@ namespace FootballScorePredictor
 	using System;
 	
 	
-	[global::System.Data.Linq.Mapping.DatabaseAttribute(Name="FootballForecast")]
+	[global::System.Data.Linq.Mapping.DatabaseAttribute(Name="AvalonSciences_FootballForecast")]
 	public partial class FootballForcastDataContext : System.Data.Linq.DataContext
 	{
 		
@@ -36,6 +36,9 @@ namespace FootballScorePredictor
     partial void InsertResult(Result instance);
     partial void UpdateResult(Result instance);
     partial void DeleteResult(Result instance);
+    partial void InsertTeam(Team instance);
+    partial void UpdateTeam(Team instance);
+    partial void DeleteTeam(Team instance);
     #endregion
 		
 		public FootballForcastDataContext() : 
@@ -83,6 +86,14 @@ namespace FootballScorePredictor
 				return this.GetTable<Result>();
 			}
 		}
+		
+		public System.Data.Linq.Table<Team> Teams
+		{
+			get
+			{
+				return this.GetTable<Team>();
+			}
+		}
 	}
 	
 	[global::System.Data.Linq.Mapping.TableAttribute(Name="dbo.Forecast")]
@@ -117,6 +128,14 @@ namespace FootballScorePredictor
 		
 		private System.Nullable<int> _LeagueID;
 		
+		private System.Nullable<int> _HomeWinForecast;
+		
+		private System.Nullable<int> _AwayWinForecast;
+		
+		private System.Nullable<int> _DrawForecast;
+		
+		private EntitySet<Result> _Results;
+		
     #region Extensibility Method Definitions
     partial void OnLoaded();
     partial void OnValidate(System.Data.Linq.ChangeAction action);
@@ -147,10 +166,17 @@ namespace FootballScorePredictor
     partial void OnRoundChanged();
     partial void OnLeagueIDChanging(System.Nullable<int> value);
     partial void OnLeagueIDChanged();
+    partial void OnHomeWinForecastChanging(System.Nullable<int> value);
+    partial void OnHomeWinForecastChanged();
+    partial void OnAwayWinForecastChanging(System.Nullable<int> value);
+    partial void OnAwayWinForecastChanged();
+    partial void OnDrawForecastChanging(System.Nullable<int> value);
+    partial void OnDrawForecastChanged();
     #endregion
 		
 		public Forecast()
 		{
+			this._Results = new EntitySet<Result>(new Action<Result>(this.attach_Results), new Action<Result>(this.detach_Results));
 			OnCreated();
 		}
 		
@@ -414,6 +440,79 @@ namespace FootballScorePredictor
 			}
 		}
 		
+		[global::System.Data.Linq.Mapping.ColumnAttribute(Storage="_HomeWinForecast", DbType="int")]
+		public System.Nullable<int> HomeWinForecast
+		{
+			get
+			{
+				return this._HomeWinForecast;
+			}
+			set
+			{
+				if ((this._HomeWinForecast != value))
+				{
+					this.OnHomeWinForecastChanging(value);
+					this.SendPropertyChanging();
+					this._HomeWinForecast = value;
+					this.SendPropertyChanged("HomeWinForecast");
+					this.OnHomeWinForecastChanged();
+				}
+			}
+		}
+		
+		[global::System.Data.Linq.Mapping.ColumnAttribute(Storage="_AwayWinForecast", DbType="int")]
+		public System.Nullable<int> AwayWinForecast
+		{
+			get
+			{
+				return this._AwayWinForecast;
+			}
+			set
+			{
+				if ((this._AwayWinForecast != value))
+				{
+					this.OnAwayWinForecastChanging(value);
+					this.SendPropertyChanging();
+					this._AwayWinForecast = value;
+					this.SendPropertyChanged("AwayWinForecast");
+					this.OnAwayWinForecastChanged();
+				}
+			}
+		}
+		
+		[global::System.Data.Linq.Mapping.ColumnAttribute(Storage="_DrawForecast", DbType="int")]
+		public System.Nullable<int> DrawForecast
+		{
+			get
+			{
+				return this._DrawForecast;
+			}
+			set
+			{
+				if ((this._DrawForecast != value))
+				{
+					this.OnDrawForecastChanging(value);
+					this.SendPropertyChanging();
+					this._DrawForecast = value;
+					this.SendPropertyChanged("DrawForecast");
+					this.OnDrawForecastChanged();
+				}
+			}
+		}
+		
+		[global::System.Data.Linq.Mapping.AssociationAttribute(Name="Forecast_Result", Storage="_Results", ThisKey="MatchID", OtherKey="MatchID")]
+		public EntitySet<Result> Results
+		{
+			get
+			{
+				return this._Results;
+			}
+			set
+			{
+				this._Results.Assign(value);
+			}
+		}
+		
 		public event PropertyChangingEventHandler PropertyChanging;
 		
 		public event PropertyChangedEventHandler PropertyChanged;
@@ -432,6 +531,18 @@ namespace FootballScorePredictor
 			{
 				this.PropertyChanged(this, new PropertyChangedEventArgs(propertyName));
 			}
+		}
+		
+		private void attach_Results(Result entity)
+		{
+			this.SendPropertyChanging();
+			entity.Forecast = this;
+		}
+		
+		private void detach_Results(Result entity)
+		{
+			this.SendPropertyChanging();
+			entity.Forecast = null;
 		}
 	}
 	
@@ -453,6 +564,12 @@ namespace FootballScorePredictor
 		
 		private int _AwayScore;
 		
+		private string _MatchDate;
+		
+		private string _MatchTime;
+		
+		private EntityRef<Forecast> _Forecast;
+		
     #region Extensibility Method Definitions
     partial void OnLoaded();
     partial void OnValidate(System.Data.Linq.ChangeAction action);
@@ -469,10 +586,15 @@ namespace FootballScorePredictor
     partial void OnHomeScoreChanged();
     partial void OnAwayScoreChanging(int value);
     partial void OnAwayScoreChanged();
+    partial void OnMatchDateChanging(string value);
+    partial void OnMatchDateChanged();
+    partial void OnMatchTimeChanging(string value);
+    partial void OnMatchTimeChanged();
     #endregion
 		
 		public Result()
 		{
+			this._Forecast = default(EntityRef<Forecast>);
 			OnCreated();
 		}
 		
@@ -507,6 +629,10 @@ namespace FootballScorePredictor
 			{
 				if ((this._MatchID != value))
 				{
+					if (this._Forecast.HasLoadedOrAssignedValue)
+					{
+						throw new System.Data.Linq.ForeignKeyReferenceAlreadyHasValueException();
+					}
 					this.OnMatchIDChanging(value);
 					this.SendPropertyChanging();
 					this._MatchID = value;
@@ -592,6 +718,214 @@ namespace FootballScorePredictor
 					this._AwayScore = value;
 					this.SendPropertyChanged("AwayScore");
 					this.OnAwayScoreChanged();
+				}
+			}
+		}
+		
+		[global::System.Data.Linq.Mapping.ColumnAttribute(Storage="_MatchDate", DbType="varchar(50)")]
+		public string MatchDate
+		{
+			get
+			{
+				return this._MatchDate;
+			}
+			set
+			{
+				if ((this._MatchDate != value))
+				{
+					this.OnMatchDateChanging(value);
+					this.SendPropertyChanging();
+					this._MatchDate = value;
+					this.SendPropertyChanged("MatchDate");
+					this.OnMatchDateChanged();
+				}
+			}
+		}
+		
+		[global::System.Data.Linq.Mapping.ColumnAttribute(Storage="_MatchTime", DbType="varchar(50)")]
+		public string MatchTime
+		{
+			get
+			{
+				return this._MatchTime;
+			}
+			set
+			{
+				if ((this._MatchTime != value))
+				{
+					this.OnMatchTimeChanging(value);
+					this.SendPropertyChanging();
+					this._MatchTime = value;
+					this.SendPropertyChanged("MatchTime");
+					this.OnMatchTimeChanged();
+				}
+			}
+		}
+		
+		[global::System.Data.Linq.Mapping.AssociationAttribute(Name="Forecast_Result", Storage="_Forecast", ThisKey="MatchID", OtherKey="MatchID", IsForeignKey=true)]
+		public Forecast Forecast
+		{
+			get
+			{
+				return this._Forecast.Entity;
+			}
+			set
+			{
+				Forecast previousValue = this._Forecast.Entity;
+				if (((previousValue != value) 
+							|| (this._Forecast.HasLoadedOrAssignedValue == false)))
+				{
+					this.SendPropertyChanging();
+					if ((previousValue != null))
+					{
+						this._Forecast.Entity = null;
+						previousValue.Results.Remove(this);
+					}
+					this._Forecast.Entity = value;
+					if ((value != null))
+					{
+						value.Results.Add(this);
+						this._MatchID = value.MatchID;
+					}
+					else
+					{
+						this._MatchID = default(int);
+					}
+					this.SendPropertyChanged("Forecast");
+				}
+			}
+		}
+		
+		public event PropertyChangingEventHandler PropertyChanging;
+		
+		public event PropertyChangedEventHandler PropertyChanged;
+		
+		protected virtual void SendPropertyChanging()
+		{
+			if ((this.PropertyChanging != null))
+			{
+				this.PropertyChanging(this, emptyChangingEventArgs);
+			}
+		}
+		
+		protected virtual void SendPropertyChanged(String propertyName)
+		{
+			if ((this.PropertyChanged != null))
+			{
+				this.PropertyChanged(this, new PropertyChangedEventArgs(propertyName));
+			}
+		}
+	}
+	
+	[global::System.Data.Linq.Mapping.TableAttribute(Name="AvalonSciences_Admin.Team")]
+	public partial class Team : INotifyPropertyChanging, INotifyPropertyChanged
+	{
+		
+		private static PropertyChangingEventArgs emptyChangingEventArgs = new PropertyChangingEventArgs(String.Empty);
+		
+		private int _ID;
+		
+		private int _TeamID;
+		
+		private string _TeamName;
+		
+		private string _ImagePath;
+		
+    #region Extensibility Method Definitions
+    partial void OnLoaded();
+    partial void OnValidate(System.Data.Linq.ChangeAction action);
+    partial void OnCreated();
+    partial void OnIDChanging(int value);
+    partial void OnIDChanged();
+    partial void OnTeamIDChanging(int value);
+    partial void OnTeamIDChanged();
+    partial void OnTeamNameChanging(string value);
+    partial void OnTeamNameChanged();
+    partial void OnImagePathChanging(string value);
+    partial void OnImagePathChanged();
+    #endregion
+		
+		public Team()
+		{
+			OnCreated();
+		}
+		
+		[global::System.Data.Linq.Mapping.ColumnAttribute(Storage="_ID", AutoSync=AutoSync.OnInsert, DbType="Int NOT NULL IDENTITY", IsPrimaryKey=true, IsDbGenerated=true)]
+		public int ID
+		{
+			get
+			{
+				return this._ID;
+			}
+			set
+			{
+				if ((this._ID != value))
+				{
+					this.OnIDChanging(value);
+					this.SendPropertyChanging();
+					this._ID = value;
+					this.SendPropertyChanged("ID");
+					this.OnIDChanged();
+				}
+			}
+		}
+		
+		[global::System.Data.Linq.Mapping.ColumnAttribute(Storage="_TeamID", DbType="Int NOT NULL")]
+		public int TeamID
+		{
+			get
+			{
+				return this._TeamID;
+			}
+			set
+			{
+				if ((this._TeamID != value))
+				{
+					this.OnTeamIDChanging(value);
+					this.SendPropertyChanging();
+					this._TeamID = value;
+					this.SendPropertyChanged("TeamID");
+					this.OnTeamIDChanged();
+				}
+			}
+		}
+		
+		[global::System.Data.Linq.Mapping.ColumnAttribute(Storage="_TeamName", DbType="VarChar(200) NOT NULL", CanBeNull=false)]
+		public string TeamName
+		{
+			get
+			{
+				return this._TeamName;
+			}
+			set
+			{
+				if ((this._TeamName != value))
+				{
+					this.OnTeamNameChanging(value);
+					this.SendPropertyChanging();
+					this._TeamName = value;
+					this.SendPropertyChanged("TeamName");
+					this.OnTeamNameChanged();
+				}
+			}
+		}
+		
+		[global::System.Data.Linq.Mapping.ColumnAttribute(Storage="_ImagePath", DbType="VarChar(200)")]
+		public string ImagePath
+		{
+			get
+			{
+				return this._ImagePath;
+			}
+			set
+			{
+				if ((this._ImagePath != value))
+				{
+					this.OnImagePathChanging(value);
+					this.SendPropertyChanging();
+					this._ImagePath = value;
+					this.SendPropertyChanged("ImagePath");
+					this.OnImagePathChanged();
 				}
 			}
 		}

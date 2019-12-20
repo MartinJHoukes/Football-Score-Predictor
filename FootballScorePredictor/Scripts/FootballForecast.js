@@ -3,9 +3,9 @@
 // GET LEAGUE TABLE STANDINGS ***************************************************************************************************************
 function GetTableAPI(league) {
 
-    var url = "http://api.football-data.org/v2/competitions/2021/standings?";
+    var url = "https://api.football-data.org/v2/competitions/2021/standings?";
     if (league === "CHAMP") {
-        url = "http://api.football-data.org/v2/competitions/2016/standings?";
+        url = "https://api.football-data.org/v2/competitions/2016/standings?";
     }
 
     $.ajax({
@@ -15,7 +15,7 @@ function GetTableAPI(league) {
         type: 'GET'
     }).done(function (response) {
         // do something with the response, e.g. isolate the id of a linked resource
-        console.log(response);
+
         var lowRound = 100;
 
         // List of object to hold the team standings
@@ -27,22 +27,32 @@ function GetTableAPI(league) {
             if (table.playedGames < lowRound)
                 lowRound = table.playedGames;
 
-            //Team Image 
             var teamImage = tImage[table.team.id];
+
+            //// Save Team Details to the database (Do this only Once at beginning of season)
+            //var teamID = table.team.id;
+            //var teamName = table.team.name;
+            //var tDetails = {};
+            //tDetails['TeamID'] = teamID;
+            //tDetails['TeamName'] = teamName;
+            //tDetails['ImagePath'] = teamImage;
+            //var turl = "/Home/SaveTeamDetails";
+            //$.post(turl, { team: tDetails });
+
 
             // String build each table row
             var teamDetails = tools.getStringBuilder()
                 .append('<tr style="background-color: white">')
-                .append('<td style="text-align: center">' + table.position + '</td>') // Position
-                .append('<td><img src=' + teamImage + ' class="teamImage"</img>' + table.team.name + '</td>') // Team Name and Image
-                .append('<td class="text-right pr-3 figCol">' + table.playedGames.toString() + '</td>') // Games Played
-                .append('<td class="text-right pr-3 figCol bg-success text-white">' + table.won.toString() + '</td>') // Games Won
-                .append('<td class="text-right pr-3 figCol bg-warning text-dark">' + table.draw.toString() + '</td>') // Games Drawn
-                .append('<td class="text-right pr-3 figCol bg-danger text-white">' + table.lost.toString() + '</td>') // Games Lost
-                .append('<td class="text-right pr-3 figCol">' + table.goalsFor.toString() + '</td>') // Goals For
-                .append('<td class="text-right pr-3 figCol">' + table.goalsAgainst.toString() + '</td>') // Goals Against
-                .append('<td class="text-right pr-3 figCol">' + table.goalDifference.toString() + '</td>') // Goal Difference
-                .append('<td class="text-right pr-3 font-weight-bold figCol">' + table.points.toString() + '</td>') // Total Points
+                .append('<td class="px-1 d-none d-sm-table-cell text-center">' + table.position + '</td>') // Position
+                .append('<td class="pr-2 colTeam teamRow" title="Teams Results" onclick="TeamResults(' + table.team.id + ')"><img src=' + teamImage + ' class="teamImage"</img>' + table.team.name + '</td>') // Team Name and Image
+                .append('<td class="text-center figCol">' + table.playedGames.toString() + '</td>') // Games Played
+                .append('<td class="d-none d-sm-table-cell text-center figCol bg-success text-white">' + table.won.toString() + '</td>') // Games Won
+                .append('<td class="d-none d-sm-table-cell text-center figCol bg-warning text-dark">' + table.draw.toString() + '</td>') // Games Drawn
+                .append('<td class="d-none d-sm-table-cell text-center figCol bg-danger text-white">' + table.lost.toString() + '</td>') // Games Lost
+                .append('<td class="d-none d-sm-table-cell text-center figCol">' + table.goalsFor.toString() + '</td>') // Goals For
+                .append('<td class="d-none d-sm-table-cell text-center figCol">' + table.goalsAgainst.toString() + '</td>') // Goals Against
+                .append('<td class="d-none d-sm-table-cell text-center figCol">' + table.goalDifference.toString() + '</td>') // Goal Difference
+                .append('<td class="text-center font-weight-bold figCol ptsCol">' + table.points.toString() + '</td>') // Total Points
                 .append('</tr>')
                 .toString();
 
@@ -51,7 +61,17 @@ function GetTableAPI(league) {
             // Populate the team standing array
             var teamStanding = {
                 'ID': table.team.id,
-                'Position': table.position
+                'Position': table.position,
+                'TeamName': table.team.name,
+                'Played': table.playedGames,
+                'Won': table.won,
+                'Drawn': table.draw,
+                'Lost': table.lost,
+                'For': table.goalsFor,
+                'Against': table.goalsAgainst,
+                'GD': table.goalDifference,
+                'Points': table.points,
+                'ImagePath': teamImage
             };
             teamStandingsList.push(teamStanding);
         });
@@ -72,7 +92,7 @@ function GetTableAPI(league) {
         });
 
         $('#nextRound').text(lowRound + 1);
-        $('#roundHeader').html("<i class='fa fa-list'></i> Round " + (lowRound + 1).toString() + " Fixtures and Predictions");
+        $('#roundHeader').html("<i class='fa fa-list'></i> Round " + (lowRound + 1).toString() + " Fixtures and Forecasts");
 
         var lastUpdated = new Date(response.competition.lastUpdated);
         lastUpdated = lastUpdated.toDateString();
@@ -80,6 +100,13 @@ function GetTableAPI(league) {
     });
 }
 // *******************************************************************************************************************************************
+
+// Get the selected team's results
+function TeamResults(teamID) {
+
+    let url = "/Fixtures/TeamResults?teamID=" + teamID;
+    window.location.href = url;
+}
 
 // String Builder
 var tools = {
@@ -127,25 +154,25 @@ day[6] = "Saturday";
 
 // Team Image
 var tImage = new Array();
-tImage[64] = "http://upload.wikimedia.org/wikipedia/de/0/0a/FC_Liverpool.svg";
+tImage[64] = "https://upload.wikimedia.org/wikipedia/de/0/0a/FC_Liverpool.svg";
 tImage[65] = "https://upload.wikimedia.org/wikipedia/en/e/eb/Manchester_City_FC_badge.svg";
-tImage[73] = "http://upload.wikimedia.org/wikipedia/de/b/b4/Tottenham_Hotspur.svg";
-tImage[61] = "http://upload.wikimedia.org/wikipedia/de/5/5c/Chelsea_crest.svg";
-tImage[57] = "http://upload.wikimedia.org/wikipedia/en/5/53/Arsenal_FC.svg";
-tImage[66] = "http://upload.wikimedia.org/wikipedia/de/d/da/Manchester_United_FC.svg";
-tImage[338] = "http://upload.wikimedia.org/wikipedia/en/6/63/Leicester02.png";
+tImage[73] = "https://upload.wikimedia.org/wikipedia/de/b/b4/Tottenham_Hotspur.svg";
+tImage[61] = "https://upload.wikimedia.org/wikipedia/de/5/5c/Chelsea_crest.svg";
+tImage[57] = "https://upload.wikimedia.org/wikipedia/en/5/53/Arsenal_FC.svg";
+tImage[66] = "https://upload.wikimedia.org/wikipedia/de/d/da/Manchester_United_FC.svg";
+tImage[338] = "https://upload.wikimedia.org/wikipedia/en/6/63/Leicester02.png";
 tImage[346] = "https://upload.wikimedia.org/wikipedia/en/e/e2/Watford.svg";
 tImage[76] = "https://upload.wikimedia.org/wikipedia/en/f/fc/Wolverhampton_Wanderers.svg";
-tImage[563] = "http://upload.wikimedia.org/wikipedia/de/e/e0/West_Ham_United_FC.svg";
-tImage[62] = "http://upload.wikimedia.org/wikipedia/de/f/f9/Everton_FC.svg";
+tImage[563] = "https://upload.wikimedia.org/wikipedia/de/e/e0/West_Ham_United_FC.svg";
+tImage[62] = "https://upload.wikimedia.org/wikipedia/de/f/f9/Everton_FC.svg";
 tImage[1044] = "https://upload.wikimedia.org/wikipedia/de/4/41/Afc_bournemouth.svg";
 tImage[397] = "https://upload.wikimedia.org/wikipedia/en/f/fd/Brighton_%26_Hove_Albion_logo.svg";
-tImage[354] = "http://upload.wikimedia.org/wikipedia/de/b/bf/Crystal_Palace_F.C._logo_%282013%29.png";
-tImage[67] = "http://upload.wikimedia.org/wikipedia/de/5/56/Newcastle_United_Logo.svg";
+tImage[354] = "https://upload.wikimedia.org/wikipedia/de/b/bf/Crystal_Palace_F.C._logo_%282013%29.png";
+tImage[67] = "https://upload.wikimedia.org/wikipedia/de/5/56/Newcastle_United_Logo.svg";
 tImage[328] = "https://upload.wikimedia.org/wikipedia/en/0/02/Burnley_FC_badge.png";
 tImage[715] = "https://upload.wikimedia.org/wikipedia/en/3/3c/Cardiff_City_crest.svg";
-tImage[340] = "http://upload.wikimedia.org/wikipedia/de/c/c9/FC_Southampton.svg";
-tImage[63] = "http://upload.wikimedia.org/wikipedia/de/a/a8/Fulham_fc.svg";
+tImage[340] = "https://upload.wikimedia.org/wikipedia/de/c/c9/FC_Southampton.svg";
+tImage[63] = "https://upload.wikimedia.org/wikipedia/de/a/a8/Fulham_fc.svg";
 tImage[394] = "https://upload.wikimedia.org/wikipedia/en/5/5a/Huddersfield_Town_A.F.C._logo.svg";
 tImage[341] = "https://upload.wikimedia.org/wikipedia/en/0/05/Leeds_United_Logo.png";
 tImage[68] = "https://upload.wikimedia.org/wikipedia/en/8/8c/Norwich_City.svg";
@@ -155,12 +182,12 @@ tImage[343] = "https://upload.wikimedia.org/wikipedia/en/2/2c/Middlesbrough_FC_c
 tImage[342] = "https://upload.wikimedia.org/wikipedia/en/4/4a/Derby_County_crest.svg";
 tImage[351] = "https://upload.wikimedia.org/wikipedia/en/d/d2/Nottingham_Forest_logo.svg";
 tImage[332] = "https://upload.wikimedia.org/wikipedia/en/6/68/Birmingham_City_FC_logo.svg";
-tImage[69] = "http://upload.wikimedia.org/wikipedia/de/d/d4/Queens_Park_Rangers.svg";
-tImage[58] = "http://upload.wikimedia.org/wikipedia/de/9/9f/Aston_Villa_logo.svg";
-tImage[387] = "https://upload.wikimedia.org/wikipedia/en/e/ed/Bristol_City_FC_logo.png";
-tImage[72] = "http://upload.wikimedia.org/wikipedia/de/a/ab/Swansea_City_Logo.svg";
+tImage[69] = "https://upload.wikimedia.org/wikipedia/de/d/d4/Queens_Park_Rangers.svg";
+tImage[58] = "https://upload.wikimedia.org/wikipedia/de/9/9f/Aston_Villa_logo.svg";
+tImage[387] = "https://upload.wikimedia.org/wikipedia/en/1/1f/Bristol_City_F.C._logo.png";
+tImage[72] = "https://upload.wikimedia.org/wikipedia/de/a/ab/Swansea_City_Logo.svg";
 tImage[322] = "https://upload.wikimedia.org/wikipedia/en/2/20/Hull_City_Crest_2014.svg";
-tImage[70] = "http://upload.wikimedia.org/wikipedia/de/a/a3/Stoke_City.svg";
+tImage[70] = "https://upload.wikimedia.org/wikipedia/de/a/a3/Stoke_City.svg";
 tImage[59] = "https://upload.wikimedia.org/wikipedia/en/0/0f/Blackburn_Rovers.svg";
 tImage[345] = "https://upload.wikimedia.org/wikipedia/en/8/88/Sheffield_Wednesday_badge.svg";
 tImage[1081] = "https://upload.wikimedia.org/wikipedia/en/2/21/PNE_FC.png";
@@ -185,5 +212,5 @@ function checkNull(val) {
 
 function Abbreviate(team) {
     return team.replace("AFC", "").replace("FC", "").replace("Albion", "").replace("United", "Utd").replace("Wanderers", "").replace("Wolverhampton", "Wolves")
-           .replace("Manchester", "Man").replace("Middlesbrough", "Middles'bro");
+        .replace("Manchester", "Man").replace("Middlesbrough", "Middles'bro");
 }

@@ -9,8 +9,6 @@ namespace FootballScorePredictor.Controllers
 {
     public class FixturesController : Controller
     {
-
-
         public ActionResult Index()
         {
             return View();
@@ -23,6 +21,16 @@ namespace FootballScorePredictor.Controllers
             ViewBag.Round = nextRound;
 
             return View();
+        }
+
+        // Check the submitted forecast password
+        public JsonResult CheckForecastPassword(string password)
+        {
+            string result = "Wrong";
+            if (password == "mjh0511")
+                result = "Correct";
+
+            return Json(result, JsonRequestBehavior.AllowGet);
         }
 
         //Predictions
@@ -55,7 +63,6 @@ namespace FootballScorePredictor.Controllers
             return null;
         }
 
-
         // Check and Get Forecast Info for this match (if any)
         public ActionResult ForecastInfo(int matchID)
         {
@@ -64,7 +71,27 @@ namespace FootballScorePredictor.Controllers
             return null;
         }
 
+        // Get selected team's Results and predictions
+        public ActionResult TeamResults(int teamID)
+        {
+           
+            // Get team results and forecasts
+            var listResults = MatchResults.TeamResults(teamID);
 
+            // Get Team Info / Current Standings
+            var teamInfo = TeamDetails.GetTeamStanding(teamID);
+            teamInfo.Results = listResults; 
+
+            return View(teamInfo);
+        }
+
+        // Get Team Details
+        public JsonResult GetTeamDetails (int teamID)
+        {
+            var team = TeamDetails.GetTeamDetails(teamID);
+
+            return Json(team, JsonRequestBehavior.AllowGet);
+        }
 
     }
 }
