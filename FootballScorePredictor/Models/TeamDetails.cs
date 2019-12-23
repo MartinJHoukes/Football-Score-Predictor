@@ -50,15 +50,18 @@ namespace FootballScorePredictor
             return team;
         }
 
-
         public static TeamStanding GetTeamStanding(int teamID)
         {
             var premTeamStandings = (List<TeamStanding>)HttpContext.Current.Session["PREMTeamStandings"];
             var champTeamStandings = (List<TeamStanding>)HttpContext.Current.Session["CHAMPTeamStandings"];
 
-            var teamInfo = premTeamStandings.Where(x => x.ID == teamID).FirstOrDefault();
-            if (teamInfo == null)
-                teamInfo = champTeamStandings.Where(x => x.ID == teamID).FirstOrDefault();
+            var teamStandings = new List<TeamStanding>();
+            if (premTeamStandings != null)
+                teamStandings = premTeamStandings.Concat(champTeamStandings).ToList();
+            else
+                teamStandings = champTeamStandings.ToList();
+
+            var teamInfo = teamStandings.Where(x => x.ID == teamID).FirstOrDefault();          
 
             return teamInfo;
         }
