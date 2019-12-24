@@ -21,6 +21,7 @@ namespace FootballScorePredictor
         public int HomeTeamForecast { get; set; }
         public int AwayTeamForecast { get; set; }
         public DateTime MatchPlayed { get; set; }
+        public string Points { get; set; }
 
 
         // Get Team Results 
@@ -41,12 +42,13 @@ namespace FootballScorePredictor
                                    HomeTeam = TeamDetails.GetTeamDetails(rs.HomeTeamID).TeamName,
                                    HomeTeamImage = TeamDetails.GetTeamDetails(rs.HomeTeamID).ImagePath,
                                    AwayTeamID = rs.AwayTeamID,
+                                   HomeTeamID = rs.HomeTeamID,
                                    AwayTeam = TeamDetails.GetTeamDetails(rs.AwayTeamID).TeamName,
                                    AwayTeamImage = TeamDetails.GetTeamDetails(rs.AwayTeamID).ImagePath,
                                    HomeTeamForecast = rs.Forecast.HomeScoreForecast.Value,
                                    AwayTeamForecast = rs.Forecast.AwayScoreForecast.Value,
-                                   MatchPlayed= DateTime.Parse(rs.MatchDate)
-
+                                   MatchPlayed= DateTime.Parse(rs.MatchDate),
+                                   Points = GetMatchPoints(rs, teamID)
                                }).ToList();
             }
 
@@ -66,6 +68,20 @@ namespace FootballScorePredictor
             }
 
             return allResults;
+        }
+
+        private static string GetMatchPoints(Result matchResult, int teamID)
+        {
+            string points = "";
+            if (matchResult.HomeScore == matchResult.AwayScore)
+                points = "1 Pt";
+            else if ((matchResult.HomeScore > matchResult.AwayScore && teamID == matchResult.HomeTeamID) ||
+                     (matchResult.AwayScore > matchResult.HomeScore && teamID == matchResult.AwayTeamID))
+                points = "3 Pts";
+            else
+                points = "0 Pts";
+
+            return points;
         }
     } 
 }
