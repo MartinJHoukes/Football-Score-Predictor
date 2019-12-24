@@ -7,7 +7,7 @@ namespace FootballScorePredictor
 {
     public class TeamDetails
     {
-        public int TeamID  { get; set; }
+        public int TeamID { get; set; }
         public string TeamName { get; set; }
         public string ImagePath { get; set; }
 
@@ -52,16 +52,16 @@ namespace FootballScorePredictor
 
         public static TeamStanding GetTeamStanding(int teamID)
         {
-            var premTeamStandings = (List<TeamStanding>)HttpContext.Current.Session["PREMTeamStandings"];
-            var champTeamStandings = (List<TeamStanding>)HttpContext.Current.Session["CHAMPTeamStandings"];
+            var premTeamStandings = new List<TeamStanding>();
+            var champTeamStandings = new List<TeamStanding>();
 
-            var teamStandings = new List<TeamStanding>();
-            if (premTeamStandings != null)
-                teamStandings = premTeamStandings.Concat(champTeamStandings).ToList();
-            else
-                teamStandings = champTeamStandings.ToList();
+            if (HttpContext.Current.Session["PREMTeamStandings"] != null)
+                premTeamStandings = (List<TeamStanding>)HttpContext.Current.Session["PREMTeamStandings"];
+            if (HttpContext.Current.Session["CHAMPTeamStandings"] != null)
+                champTeamStandings = (List<TeamStanding>)HttpContext.Current.Session["CHAMPTeamStandings"];
 
-            var teamInfo = teamStandings.Where(x => x.ID == teamID).FirstOrDefault();          
+            var teamStandings = premTeamStandings.Concat(champTeamStandings).ToList();
+            var teamInfo = teamStandings.Where(x => x.ID == teamID).FirstOrDefault();
 
             return teamInfo;
         }
