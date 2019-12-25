@@ -41,7 +41,7 @@ namespace FootballScorePredictor
                         select new TeamDetails
                         {
                             TeamID = teamID,
-                            TeamName = tm.TeamName,
+                            TeamName = TeamNameAbbreviate(tm.TeamName),
                             ImagePath = tm.ImagePath
 
                         }).FirstOrDefault();
@@ -64,6 +64,12 @@ namespace FootballScorePredictor
             var teamInfo = teamStandings.Where(x => x.ID == teamID).FirstOrDefault();
 
             return teamInfo;
+        }
+
+        private static string TeamNameAbbreviate(string teamName)
+        {
+            return teamName.Replace("AFC", "").Replace("FC", "").Replace("Albion", "").Replace("United", "Utd").Replace("Wanderers", "").Replace("Wolverhampton", "Wolves")
+                .Replace("Manchester", "Man").Replace("Middlesbrough", "Middles'bro");
         }
     }
 }

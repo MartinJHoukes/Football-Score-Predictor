@@ -73,8 +73,7 @@ namespace FootballScorePredictor.Controllers
 
         // Get selected team's Results and predictions
         public ActionResult TeamResults(int teamID)
-        {
-           
+        {          
             // Get team results and forecasts
             var listResults = MatchResults.TeamResults(teamID);
 
